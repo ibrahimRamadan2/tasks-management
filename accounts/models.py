@@ -23,5 +23,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    
+    
+class UserToken(models.Model):
+    token = models.UUIDField(_(""), unique=True, primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(_(""), auto_now_add=True)
+    
+    
+    
+    
+    
 
 
