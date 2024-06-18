@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status 
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db.models import Q
 from .models import Tasks 
 from .serializers import TasksSerilizer
 
@@ -12,10 +12,23 @@ from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 class TaskView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        tasks = Tasks.objects.filter(is_deleted=False)
+        # import pdb; pdb.set_trace()
+        params = request.GET
+ 
+        filters = {
+            'title__icontains': params.get("name", ""),
+            'status__icontains': params.get("status", ""),
+            'assignee_id': params.get("assignee", ""),
+            'assigned_by_id': params.get("assigned_by", "")
+        }
+        query = Q(is_deleted=False)
+        for key, value in filters.items():
+            if value:
+                query &= Q(**{key: value})
+        tasks = Tasks.objects.filter(query)
         serialized_data = TasksSerilizer(tasks,many=True)
         return Response({"msg":serialized_data.data} , status=status.HTTP_200_OK) 
     
